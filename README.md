@@ -1,4 +1,4 @@
-# Kill9
+# Kill9 — The 1-Click macOS Menu Bar Port Killer
 
 A standalone macOS 13+ menu bar utility, written in SwiftUI and AppKit. Open the status icon to inspect live TCP listeners and stop a process holding a development port.
 
@@ -6,7 +6,69 @@ A standalone macOS 13+ menu bar utility, written in SwiftUI and AppKit. Open the
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
 </a>
 
+> **Topics / Tags:** `kill-port`, `port-killer`, `eaddrinuse`, `macos-menubar`, `developer-tools`, `lsof`, `kill-9`, `swiftui`
+
+---
+
+## How to Kill a Running Server Port on macOS
+
+When developing web applications, APIs, or microservices, you frequently run into port collision errors when an existing background process has not terminated cleanly:
+
+```text
+Error: listen EADDRINUSE: address already in use :::3000
+```
+or
+```text
+Port 8080 is already in use by another process.
+```
+
+### Option 1: The Manual Terminal Method
+
+Traditionally, freeing a locked port on macOS requires running multiple terminal commands:
+
+1. **Find the PID occupying the port:**
+   ```sh
+   lsof -i :3000
+   ```
+   Or strictly for listening TCP sockets:
+   ```sh
+   lsof -iTCP:3000 -sTCP:LISTEN -n -P
+   ```
+
+2. **Terminate the process by PID:**
+   ```sh
+   kill -15 <PID>   # Graceful SIGTERM
+   kill -9 <PID>    # Force SIGKILL
+   ```
+
+*Common Terminal Shortcut:*
+```sh
+kill -9 $(lsof -t -i:3000)
+```
+
+**Drawbacks of the manual terminal workflow:**
+- Requires remembering `lsof` flags (`-i`, `-n`, `-P`, `-t`).
+- Output usually just reports `node` or `python` without revealing *which* workspace or repository spawned it.
+- Risk of killing the wrong PID if another application or daemon reused it.
+
+---
+
+### Option 2: 1-Click with Kill9 (Recommended)
+
+**Kill9** replaces terminal lookups and command flags with a clean menu bar interface:
+
+1. **Click the menu bar wordmark:** Kill9 instantly scans and lists all active development listeners.
+2. **Identify the exact project:** Real project names are automatically extracted from `package.json` or directory roots instead of ambiguous process names.
+3. **1-Click Stop / Force Kill:** Click **Stop** to send a clean `SIGTERM`. If the process remains hung, **Force** appears to send `SIGKILL`. PID ownership and start time are verified immediately before signaling to prevent killing stale or system processes.
+
+---
+
 ## Run
+
+### Download Pre-built App
+Download the latest universal build from [GitHub Releases](https://github.com/adityamali/kill9/releases/latest) (unzip `Kill9-macOS.zip` and move `Kill9.app` to `/Applications`).
+
+### Build from Source
 
 Open `Kill9.xcodeproj`, select the shared **Kill9** scheme, then Run. No third-party packages are required. The app appears as a compact **KILL9** wordmark in Impact in the menu bar, with a system heavy font fallback. The wordmark is drawn as a 34×18pt native template image, centered by its visible bounds inside a variable-width status item; AppKit controls tint for appearance and selection. The popover header uses the KILL9 Impact wordmark without a system symbol. The app icon uses the supplied black-and-white artwork, packaged at standard macOS icon sizes. It has no Dock icon or conventional app window. Quit is inside the popover.
 
